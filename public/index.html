@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>mcControl</title>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse bg-inverse">
+		<a class="navbar-brand" href="#">mcControl</a>
+    </nav>
+
+	<div class="container main">
+		<div class="row justify-content-center align-items-center">
+			<div class="col-10 js-io-state">Loading...</div>
+			<button type="button" class="col-2 btn btn-secondary js-ctrl-start"><i class="fa fa-play" aria-hidden="true"></i> Start</button>
+			<button type="button" class="col-2 btn btn-secondary js-ctrl-stop"><i class="fa fa-stop" aria-hidden="true"></i> Stop</button>
+		</div>
+
+		<div class="row justify-content-center align-items-center">
+			<textarea readonly class="col-12 js-io-output"></textarea>
+			<input type="text" class="form-control col-8 js-io-input"></input>
+			<button type="button" class="col-4 btn btn-secondary js-ctrl-send"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</button>
+		</div>
+	</div>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+	<script>
+	$(document).ready(function () {
+		var $btnStart = $('.js-ctrl-start');
+		var $btnStop = $('.js-ctrl-stop');
+		var $btnSend = $('.js-ctrl-send');
+
+		var $state = $('.js-io-state');
+		var $output = $('.js-io-output');
+		var $cmdInput = $('.js-io-input');
+		var socket = io.connect();
+
+		$btnStart.hide();
+		$btnStop.hide();
+		$cmdInput.prop('disabled', true);
+
+		socket.on('status', function(data) {
+			$state.text(data.state);
+			//possible state: idle, starting, running, stopping
+			//update ui according to status
+			if (data.state === 'idle') {
+				$btnStart.show();
+				$btnStart.prop('disabled', false);
+				$btnStop.hide();
+				$cmdInput.prop('disabled', true);
+				$btnSend.prop('disabled', true);
+			} else if (data.state === 'starting') {
+				$btnStart.show();
+				$btnStart.prop('disabled', true);
+				$btnStop.hide();
+				$cmdInput.prop('disabled', true);
+				$btnSend.prop('disabled', true);
+			} else if (data.state === 'running') {
+				$btnStart.hide();
+				$btnStop.show();
+				$btnStop.prop('disabled', false);
+				$cmdInput.prop('disabled', false);
+				$btnSend.prop('disabled', false);
+			} else if (data.state === 'stopping') {
+				$btnStart.hide();
+				$btnStop.show();
+				$btnStop.prop('disabled', true);
+				$cmdInput.prop('disabled', true);
+				$btnSend.prop('disabled', true);
+			}
+
+		});
+		socket.on('log', function(data) {
+			log(data);
+		});
+
+		$btnStart.click(function() { 
+			socket.emit('start');
+			return false;
+		});
+		$btnStop.click(function() { 
+			socket.emit('stop');
+			return false;
+		});
+		$btnSend.click(function() { 
+			socket.emit('command', { cmd: $cmdInput.val() });
+			$cmdInput.val('');
+			return false;
+		});
+
+		function log(line) {
+			$output.val($output.val() + '\n' + line);
+			$output.scrollTop($output[0].scrollHeight);
+		}
+	});
+	</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "mccontrol",
+  "version": "1.0.0",
+  "description": "Web interface to control minecraft server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "minrcraft",
+    "server",
+    "interface"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^1.28.1",
+    "express": "^4.16.2",
+    "scriptserver": "git+https://github.com/garrettjoecox/scriptserver.git",
+    "socket.io": "^2.0.4"
+  }
+}

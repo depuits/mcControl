@@ -1,0 +1,12 @@
+html {
+	position: relative;
+	min-height: 100%;
+}
+.main {
+	padding-top: 24px;
+	padding-bottom: 24px;
+}
+.main div[class^="col"] {
+	padding-top: 16px;
+	padding-bottom: 16px;
+}
