@@ -17,25 +17,35 @@
     </nav>
 
 	<div class="container main">
-		<div class="row justify-content-center align-items-center">
+		<div class="row">
 			<div class="col-10 js-io-state">Loading...</div>
+
 			<button type="button" class="col-2 btn btn-secondary js-ctrl-start"><i class="fa fa-play" aria-hidden="true"></i> Start</button>
 			<button type="button" class="col-2 btn btn-secondary js-ctrl-stop"><i class="fa fa-stop" aria-hidden="true"></i> Stop</button>
 		</div>
 
-		<div class="row justify-content-center align-items-center">
-			<textarea readonly class="col-12 js-io-output"></textarea>
-			<input type="text" class="form-control col-8 js-io-input"></input>
-			<button type="button" class="col-4 btn btn-secondary js-ctrl-send"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</button>
+		<div class="row">
+			<div class="col-2">
+				<ul class="js-io-players">
+				</ul>
+			</div>
+			<div class="col-10">
+				<div class="row"><textarea readonly class="col-12 js-io-output"></textarea></div>
+				<div class="row">
+					<input type="text" class="form-control col-8 js-io-input" />
+					<button type="button" class="col-4 btn btn-secondary js-ctrl-send"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</button>
+				<div>
+			</div>
 		</div>
 	</div>
 
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js" integrity="sha256-ABVkpwb9K9PxubvRrHMkk6wmWcIHUE9eBxNZLXYQ84k=" crossorigin="anonymous"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 	<script>
-	$(document).ready(function () {
+	$(document).ready(function() {
 		var $btnStart = $('.js-ctrl-start');
 		var $btnStop = $('.js-ctrl-stop');
 		var $btnSend = $('.js-ctrl-send');
@@ -43,14 +53,25 @@
 		var $state = $('.js-io-state');
 		var $output = $('.js-io-output');
 		var $cmdInput = $('.js-io-input');
-		var socket = io.connect();
+		var $players = $('.js-io-players');
 
 		$btnStart.hide();
 		$btnStop.hide();
 		$cmdInput.prop('disabled', true);
+		$btnSend.prop('disabled', true);
+
+		if (!window.io) {
+			alert ('Socket io lib not found.');
+			return false;
+		}
+
+		var socket = window.io.connect();
 
 		socket.on('status', function(data) {
 			$state.text(data.state);
+			var date = data.startTime ? moment(data.startTime).format('llll') : undefined;
+			$state.prop('title', date);
+			
 			//possible state: idle, starting, running, stopping
 			//update ui according to status
 			if (data.state === 'idle') {
@@ -79,6 +100,12 @@
 				$btnSend.prop('disabled', true);
 			}
 
+			// clear player list
+			$players.empty();
+			// repopulate player list
+			for (var i = 0; i < data.players.length; ++i) {
+				$players.append('<li title="' + moment(data.players[i].date).format('llll') + '">' + data.players[i].name + '</li>');
+			}
 		});
 		socket.on('log', function(data) {
 			log(data);
