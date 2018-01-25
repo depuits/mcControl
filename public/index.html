@@ -68,6 +68,7 @@
 		var socket = window.io.connect();
 
 		socket.on('status', function(data) {
+			document.title = 'mcControl: ' + data.state;
 			$state.text(data.state);
 			var date = data.startTime ? moment(data.startTime).format('llll') : undefined;
 			$state.prop('title', date);
