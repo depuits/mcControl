@@ -15,9 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "config": "^1.28.1",
-    "express": "^4.16.2",
+    "config": "^1.31.0",
+    "express": "^4.17.1",
     "scriptserver": "git+https://github.com/garrettjoecox/scriptserver.git",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.3.0"
   }
 }
